@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Váš nákupní košík HEATX Lab. Zkontrolujte svá zařízení heat-not-burn a jednorázové produkty před pokladnou.">
+  <meta property="og:title" content="Nákupní košík - HEATX Lab">
+  <meta property="og:image" content="https://heatxlab.com/assets/hero-banner.jpg">
+  <title>Nákupní košík - HEATX Lab</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ecommerce.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300d4ff'/%3E%3Cstop offset='1' stop-color='%236c5ce7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='58' font-weight='bold' text-anchor='middle' fill='white'%3EH%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container">
+      <nav class="nav">
+        <a href="/" class="logo"><div class="logo-icon">H</div><span>HEATX Lab</span></a>
+        <div class="nav-links">
+          <a href="/index.html">Domů</a>
+          <a href="/products.html">Produkty</a>
+          <a href="/index.html#features">Technologie</a>
+          <a href="/index.html#why">Proč my</a>
+          <a href="/blog.html">Blog</a>
+          <a href="/about.html">O nás</a>
+          <a href="/contact.html">Kontakt</a>
+        </div>
+        <div class="nav-cta">
+          <div class="lang-switch">
+            <button class="lang-btn" id="langBtn">
+              <span>🌐</span>
+              <span class="lang-current">CS</span>
+              <span>▾</span>
+            </button>
+            <div class="lang-dropdown" id="langDropdown">
+              <div class="lang-option" data-code="EN">English</div>
+              <div class="lang-option active" data-code="CS">Čeština</div>
+              <div class="lang-option" data-code="AR">العربية (Arabic)</div>
+              <div class="lang-option" data-code="ID">Bahasa Indonesia</div>
+              <div class="lang-option" data-code="IT">Italiano</div>
+              <div class="lang-option" data-code="JA">日本語 (Japanese)</div>
+              <div class="lang-option" data-code="KO">한국어 (Korean)</div>
+              <div class="lang-option" data-code="PL">Polski</div>
+              <div class="lang-option" data-code="RU">Русский (Russian)</div>
+              <div class="lang-option" data-code="DE">Deutsch</div>
+            </div>
+          </div>
+          <a href="/cart.html" class="cart-icon-link">
+            <span class="cart-icon">🛒</span>
+            <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+          </a>
+          <a href="/products.html" class="btn btn-primary">Koupit nyní</a>
+          <div class="mobile-menu-btn" id="mobileMenuBtn"><span></span><span></span><span></span></div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="cart-page" style="margin-top:72px;padding:40px 0;min-height:60vh;">
+    <div class="container">
+      <h1 style="font-size:32px;margin-bottom:32px;color:var(--text-dark);">Nákupní košík</h1>
+      <div id="cartContent"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 HEATX Lab · Shenzhen Qianhe Technology Co., Ltd. Všechna práva vyhrazena.</p>
+        <div class="footer-links">
+          <a href="/policies.html#privacy">Soukromí</a>
+          <a href="/policies.html#terms">Podmínky</a>
+          <a href="/policies.html#cookies">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/store.js?v=20260927"></script>
+  <script>
+    function renderCart() {
+      const cart = getCart();
+      const container = document.getElementById("cartContent");
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Váš košík je prázdný</h2>
+            <p>Začněte nakupovat a najděte si svůj dokonalý heat-not-burn zážitek!</p>
+            <a href="/products.html" class="btn btn-primary btn-large">Procházet produkty</a>
+          </div>
+        `;
+        return;
+      }
+
+      const items = cart.map((item, i) => `
+        <div class="cart-item">
+          <div class="cart-item-image">
+            <img src="${item.image}" alt="${item.name}">
+          </div>
+          <div class="cart-item-info">
+            <h3 class="cart-item-name">${item.name}</h3>
+            <div class="cart-item-options">
+              ${item.options.color ? `<span>Barva: ${item.options.color}</span>` : ''}
+            </div>
+            <div class="cart-item-price">${formatPrice(item.price)}</div>
+          </div>
+          <div class="cart-item-qty">
+            <button onclick="handleQtyChange(${i}, -1)" aria-label="Snížit">−</button>
+            <span>${item.qty}</span>
+            <button onclick="handleQtyChange(${i}, 1)" aria-label="Zvýšit">+</button>
+          </div>
+          <div class="cart-item-total">${formatPrice(item.price * item.qty)}</div>
+          <button class="cart-item-remove" onclick="handleRemove(${i})" aria-label="Odstranit">✕</button>
+        </div>
+      `).join("");
+
+      const appliedCode = getAppliedDiscountCode();
+      const discount = getDiscount();
+      const shipping = getShipping();
+      const subtotal = getSubtotal();
+      const discountAmount = getDiscountAmount();
+      const total = getTotal();
+
+      container.innerHTML = `
+        <div class="cart-layout">
+          <div class="cart-items-list">
+            ${items}
+          </div>
+          <div class="cart-summary">
+            <h2 class="cart-summary-title">Souhrn objednávky</h2>
+
+            <div class="discount-box">
+              <label class="discount-label">Slevový kód</label>
+              <div class="discount-input-row">
+                <input type="text" id="discountInput" placeholder="Zadejte kód" value="${appliedCode}">
+                <button class="btn btn-outline" onclick="handleApplyDiscount()">Použít</button>
+              </div>
+              <div id="discountMsg" class="discount-msg"></div>
+              <div class="discount-hint">Vyzkoušejte: HEATXLAB10, SAVE20, FREESHIP, WELCOME15, BULK25</div>
+            </div>
+
+            <div class="summary-row">
+              <span>Mezisoučet</span>
+              <span>${formatPrice(subtotal)}</span>
+            </div>
+            ${discountAmount > 0 ? `
+            <div class="summary-row discount">
+              <span>Sleva (${appliedCode})</span>
+              <span>−${formatPrice(discountAmount)}</span>
+            </div>` : ''}
+            <div class="summary-row">
+              <span>Doprava</span>
+              <span>${shipping === 0 ? '<span style="color:#10b981;">ZDARMA</span>' : formatPrice(shipping)}</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total">
+              <span>Celkem</span>
+              <span>${formatPrice(total)}</span>
+            </div>
+
+            <a href="/checkout.html" class="btn btn-primary btn-large btn-block" style="margin-top:16px;">Pokračovat k pokladně</a>
+            <a href="/products.html" class="btn btn-outline btn-block" style="margin-top:8px;">Pokračovat v nákupu</a>
+
+            <div class="cart-trust">
+              <div>🔒 Bezpečná pokladna</div>
+              <div>↩️ 30denní vrácení</div>
+              <div>🛡️ Ochrana kupujících</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      if (discount) {
+        const msgEl = document.getElementById("discountMsg");
+        if (msgEl) msgEl.innerHTML = `<span style="color:#10b981;">✓ ${discount.desc}</span>`;
+      }
+    }
+
+    function handleQtyChange(index, delta) {
+      const cart = getCart();
+      if (cart[index]) {
+        cart[index].qty = Math.max(1, cart[index].qty + delta);
+        saveCart(cart);
+        renderCart();
+      }
+    }
+
+    function handleRemove(index) {
+      removeFromCart(index);
+      renderCart();
+    }
+
+    function handleApplyDiscount() {
+      const code = document.getElementById("discountInput").value;
+      const result = applyDiscountCode(code);
+      const msgEl = document.getElementById("discountMsg");
+      if (result.success) {
+        msgEl.innerHTML = `<span style="color:#10b981;">✓ ${result.message}</span>`;
+      } else {
+        msgEl.innerHTML = `<span style="color:#ef4444;">✗ ${result.message}</span>`;
+      }
+      renderCart();
+    }
+
+    renderCart();
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>

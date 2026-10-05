@@ -1,0 +1,146 @@
+{
+  "about": {
+    "hash": "3f56f792ac828883f086b6b3cc6522e08be1a27d2fd3d1ca5fcfb6e67328f049",
+    "size": 14512
+  },
+  "about.html": {
+    "hash": "3f56f792ac828883f086b6b3cc6522e08be1a27d2fd3d1ca5fcfb6e67328f049",
+    "size": 14512
+  },
+  "assets/disposables.jpg": {
+    "hash": "3ff6976863ecce7d7e7528f18564e2d4594796a4f9a7e56d8ca475093e9cec30",
+    "size": 319413
+  },
+  "assets/gen2-0.jpg": {
+    "hash": "e8311af1a84ab0a58d0fe5fe6f5713f51404ae15a4dae2522ebf0b7afd911796",
+    "size": 1431764
+  },
+  "assets/heatx-3-0.jpg": {
+    "hash": "2692fe8e88477825cff533440b891711cade3420423bd55acf52ecfe9634e2ca",
+    "size": 1194530
+  },
+  "assets/hero-1-v2.jpg": {
+    "hash": "a291db10ae790f4ef0603da6d4b1fe0c94bda93de4b4d914ca33f150a57f9dc5",
+    "size": 726222
+  },
+  "assets/hero-2-v2.jpg": {
+    "hash": "6f71fe8687aee5ce5bd81af3cab521a84b4b1ceb8ad2435e32e0346dec13f629",
+    "size": 443824
+  },
+  "assets/hero-3-v2.jpg": {
+    "hash": "27855e73070ac56d340561c0c729198e7f61a59388c840492cfcb6218476b2c3",
+    "size": 471539
+  },
+  "assets/hero-4-v2.jpg": {
+    "hash": "caa245422acd5f06dd1c3e74db4605c8b675b2ec5c807fc90e94c869db126053",
+    "size": 211652
+  },
+  "assets/hero-5-v2.jpg": {
+    "hash": "8ea4b00d808e64d206e440305d3969023febb7da8469c1c525d003dd8fa46c1d",
+    "size": 820623
+  },
+  "assets/hero-6-v3.jpg": {
+    "hash": "89f89790a7a33c8dc5e9258cfe1c221700fd82f402b16df79e0d3496b099fadc",
+    "size": 368481
+  },
+  "assets/hero-banner.jpg": {
+    "hash": "c4778d650ae4e2ceaadfaba1d538ae18314e991ce6d975261c407f8799183d5d",
+    "size": 122639
+  },
+  "blog": {
+    "hash": "4fc652fca9b8f1244660e0a9a6ac4d24b1aac332a2835ddf8ebf6222659c8240",
+    "size": 8466
+  },
+  "blog-article": {
+    "hash": "0f18ad544156c9533222ff2fa5a63cf7ebba0577132c088944f52f54f83f2fdf",
+    "size": 8134
+  },
+  "blog.html": {
+    "hash": "4fc652fca9b8f1244660e0a9a6ac4d24b1aac332a2835ddf8ebf6222659c8240",
+    "size": 8466
+  },
+  "cart": {
+    "hash": "6425c7fde3cd0c7a06550b7fa5e43887e08c24360e4ff26df4e1bfdb2423dec5",
+    "size": 8969
+  },
+  "cart.html": {
+    "hash": "6425c7fde3cd0c7a06550b7fa5e43887e08c24360e4ff26df4e1bfdb2423dec5",
+    "size": 8969
+  },
+  "checkout": {
+    "hash": "46fbf0da19889fd0a7c18d926227a43d6f9b1610bae3ceb7059df4b5c70a4ddb",
+    "size": 31593
+  },
+  "checkout.html": {
+    "hash": "46fbf0da19889fd0a7c18d926227a43d6f9b1610bae3ceb7059df4b5c70a4ddb",
+    "size": 31593
+  },
+  "contact": {
+    "hash": "64832ef85e89400b47f4ea862d7539cf44c2738f22e19eb1a43e3dcbe9c8563d",
+    "size": 13835
+  },
+  "contact.html": {
+    "hash": "64832ef85e89400b47f4ea862d7539cf44c2738f22e19eb1a43e3dcbe9c8563d",
+    "size": 13835
+  },
+  "css/ecommerce.css": {
+    "hash": "dbf6667918cda03d1c7bfe656b8fc78baee66881293f0273c2460f8f081f2ba4",
+    "size": 20901
+  },
+  "css/style.css": {
+    "hash": "0e29a126b4b29556a61fe4adfc7a0c2056a886ff361bd8a0209ce616a29c7c1b",
+    "size": 31969
+  },
+  "index.html": {
+    "hash": "b4fdfa75f40941cb2ad99a6f325b6a42a30600d08eca7a3ebfb8feff3a84638a",
+    "size": 28240
+  },
+  "js/blog.js": {
+    "hash": "62db1e31dda43ed2e3e8547475754aa1de350ff3b7a75c589ce6dd5e75182f27",
+    "size": 91371
+  },
+  "js/main.js": {
+    "hash": "b25415d30fd69267e68196e5fb50adf24ef2302913867d434619c10cb8e919ce",
+    "size": 8435
+  },
+  "order-tracking": {
+    "hash": "6c779075208229413823c30c08ea500b7fe972ad9b4b7d5228e791e784e583cb",
+    "size": 26483
+  },
+  "order-tracking.html": {
+    "hash": "6c779075208229413823c30c08ea500b7fe972ad9b4b7d5228e791e784e583cb",
+    "size": 26483
+  },
+  "policies": {
+    "hash": "c7cc9e894f20302630a3ee255a49492593e66351826a7271b3bfc2bcd9feafc5",
+    "size": 23577
+  },
+  "policies.html": {
+    "hash": "c7cc9e894f20302630a3ee255a49492593e66351826a7271b3bfc2bcd9feafc5",
+    "size": 23577
+  },
+  "product.html": {
+    "hash": "6c34c83f8338d143fff01983956e497d0f386e110d525bc572396685745fe05c",
+    "size": 17088
+  },
+  "products": {
+    "hash": "e749d5faaf0db873208064b2ea41edc37abae1914770b6adb87a1274076340d7",
+    "size": 10939
+  },
+  "products.html": {
+    "hash": "e749d5faaf0db873208064b2ea41edc37abae1914770b6adb87a1274076340d7",
+    "size": 10939
+  },
+  "robots.txt": {
+    "hash": "cb727446d910b097c9a9d5afe9f97dbf49d7f6d712f0c1439eb6152c5e565cda",
+    "size": 143
+  },
+  "rss.xml": {
+    "hash": "ceb23f9241224a2f9c1635dbb67c87ab8978ecab2ffd55bd745820d3678a0b36",
+    "size": 5852
+  },
+  "sitemap.xml": {
+    "hash": "4642b1560af236e1a97879f2fa81371d5dd8e777125734e762c37fe5cddd5317",
+    "size": 6687
+  }
+}

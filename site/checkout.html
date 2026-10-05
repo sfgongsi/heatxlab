@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bezpečná pokladna pro vaši objednávku HEATX Lab. Plaťte přes Visa, Mastercard, PayPal, Apple Pay, Google Pay nebo bankovní převod (T/T).">
+  <meta property="og:title" content="Pokladna - HEATX Lab">
+  <meta property="og:image" content="https://heatxlab.com/assets/hero-banner.jpg">
+  <title>Pokladna - HEATX Lab</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/ecommerce.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%2300d4ff'/%3E%3Cstop offset='1' stop-color='%236c5ce7'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='22' fill='url(%23g)'/%3E%3Ctext x='50' y='68' font-family='Arial' font-size='58' font-weight='bold' text-anchor='middle' fill='white'%3EH%3C/text%3E%3C/svg%3E">
+  <!-- Stripe.js for secure payment confirmation -->
+  <script src="https://js.stripe.com/v3/"></script>
+  <script>
+    // Stripe publishable key. It MUST be the live key (pk_live_...) that pairs
+    // with the account whose secret key is stored on the Pages project.
+    var STRIPE_PUBLISHABLE_KEY = "pk_test_51UKF7wQRT8u1BKQgi5NX9cALdV2o6Z6a0wGvZHUnx90ru6O6ZnnNm1EO6MLIn1P3l00A3IeiCgDe1ufDRAbDrKVH00uHsWKyM7";
+  </script>
+</head>
+<body>
+
+  <header class="header" id="header">
+    <div class="container">
+      <nav class="nav">
+        <a href="/" class="logo"><div class="logo-icon">H</div><span>HEATX Lab</span></a>
+        <div class="nav-links">
+          <a href="/index.html">Domů</a>
+          <a href="/products.html">Produkty</a>
+          <a href="/index.html#features">Technologie</a>
+          <a href="/index.html#why">Proč my</a>
+          <a href="/blog.html">Blog</a>
+          <a href="/about.html">O nás</a>
+          <a href="/contact.html">Kontakt</a>
+        </div>
+        <div class="nav-cta">
+          <div class="lang-switch">
+            <button class="lang-btn" id="langBtn">
+              <span>🌐</span>
+              <span class="lang-current">CS</span>
+              <span>▾</span>
+            </button>
+            <div class="lang-dropdown" id="langDropdown">
+              <div class="lang-option" data-code="EN">English</div>
+              <div class="lang-option active" data-code="CS">Čeština</div>
+              <div class="lang-option" data-code="AR">العربية (Arabic)</div>
+              <div class="lang-option" data-code="ID">Bahasa Indonesia</div>
+              <div class="lang-option" data-code="IT">Italiano</div>
+              <div class="lang-option" data-code="JA">日本語 (Japanese)</div>
+              <div class="lang-option" data-code="KO">한국어 (Korean)</div>
+              <div class="lang-option" data-code="PL">Polski</div>
+              <div class="lang-option" data-code="RU">Русский (Russian)</div>
+              <div class="lang-option" data-code="DE">Deutsch</div>
+            </div>
+          </div>
+          <a href="/cart.html" class="cart-icon-link">
+            <span class="cart-icon">🛒</span>
+            <span class="cart-badge" id="cartBadge" style="display:none;">0</span>
+          </a>
+          <div class="mobile-menu-btn" id="mobileMenuBtn"><span></span><span></span><span></span></div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="checkout-page" style="margin-top:72px;padding:40px 0;min-height:60vh;">
+    <div class="container">
+      <h1 style="font-size:32px;margin-bottom:32px;color:var(--text-dark);">Pokladna</h1>
+      <div id="checkoutContent"></div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <p>© 2026 HEATX Lab · Shenzhen Qianhe Technology Co., Ltd. Všechna práva vyhrazena.</p>
+        <div class="footer-links">
+          <a href="/policies.html#privacy">Soukromí</a>
+          <a href="/policies.html#terms">Podmínky</a>
+          <a href="/policies.html#cookies">Cookies</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/store.js?v=20260929a"></script>
+  <script>
+    // Payment methods that must be authorised online rather than by bank transfer.
+    var ONLINE_PAYMENT_METHODS = ['card', 'applepay', 'googlepay', 'paypal'];
+    // Methods that collect card details in the form below.
+    var CARD_PAYMENT_METHODS = ['card', 'applepay', 'googlepay'];
+
+    function getShippingMethod() {
+      const el = document.querySelector('input[name="shippingMethod"]:checked');
+      return el ? el.value : 'standard';
+    }
+
+    function getCheckoutTotals() {
+      const method = getShippingMethod();
+      return {
+        method: method,
+        subtotal: getSubtotal(),
+        discountAmount: getDiscountAmount(),
+        shipping: getShipping(method),
+        total: getTotal(method),
+        appliedCode: getAppliedDiscountCode(),
+      };
+    }
+
+    function renderCheckout() {
+      const cart = getCart();
+      const container = document.getElementById("checkoutContent");
+
+      if (cart.length === 0) {
+        container.innerHTML = `
+          <div class="empty-cart">
+            <div class="empty-cart-icon">🛒</div>
+            <h2>Váš košík je prázdný</h2>
+            <p>Přidejte produkty před přechodem k pokladně.</p>
+            <a href="/products.html" class="btn btn-primary btn-large">Procházet produkty</a>
+          </div>
+        `;
+        return;
+      }
+
+      const t = getCheckoutTotals();
+      const baseShipping = getBaseShipping();
+      const expressShipping = getShipping('express');
+
+      const cartItems = cart.map(item => `
+        <div class="checkout-item">
+          <img src="${esc(item.image)}" alt="${esc(item.name)}">
+          <div class="checkout-item-info">
+            <div class="checkout-item-name">${esc(item.name)}</div>
+            <div class="checkout-item-qty">Množství: ${esc(item.qty)}${item.options && item.options.color ? ' · ' + esc(item.options.color) : ''}</div>
+          </div>
+          <div class="checkout-item-price">${formatPrice(item.price * item.qty)}</div>
+        </div>
+      `).join("");
+
+      container.innerHTML = `
+        <div class="checkout-layout">
+          <!-- Left: Forms -->
+          <div class="checkout-forms">
+
+            <!-- Contact -->
+            <div class="checkout-section">
+              <h2 class="checkout-section-title">1. Kontaktní údaje</h2>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="email">E-mail *</label>
+                  <input type="email" id="email" name="email" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                  <label for="phone">Telefon *</label>
+                  <input type="tel" id="phone" name="phone" placeholder="+1 (555) 123-4567" required>
+                </div>
+              </div>
+              <label class="checkbox-label">
+                <input type="checkbox" id="guestCheckout" checked> Pokladna jako host (není potřeba účet)
+              </label>
+            </div>
+
+            <!-- Shipping Address -->
+            <div class="checkout-section">
+              <h2 class="checkout-section-title">2. Doručovací adresa</h2>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName">Jméno *</label>
+                  <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                  <label for="lastName">Příjmení *</label>
+                  <input type="text" id="lastName" name="lastName" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="address">Adresa *</label>
+                <input type="text" id="address" name="address" placeholder="Ulice a číslo" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="city">Město *</label>
+                  <input type="text" id="city" name="city" required>
+                </div>
+                <div class="form-group">
+                  <label for="state">Kraj / Provincie *</label>
+                  <input type="text" id="state" name="state" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="zip">PSČ *</label>
+                  <input type="text" id="zip" name="zip" required>
+                </div>
+                <div class="form-group">
+                  <label for="country">Země *</label>
+                  <select id="country" name="country" required>
+                    <option value="US">Spojené státy</option>
+                    <option value="GB">Spojené království</option>
+                    <option value="DE">Německo</option>
+                    <option value="FR">Francie</option>
+                    <option value="CA">Kanada</option>
+                    <option value="AU">Austrálie</option>
+                    <option value="ES">Španělsko</option>
+                    <option value="IT">Itálie</option>
+                    <option value="NL">Nizozemsko</option>
+                    <option value="JP">Japonsko</option>
+                    <option value="KR">Jižní Korea</option>
+                    <option value="SA">Saúdská Arábie</option>
+                    <option value="AE">SAE</option>
+                    <option value="RU">Rusko</option>
+                    <option value="PL">Polsko</option>
+                    <option value="ID">Indonésie</option>
+                    <option value="other">Jiná</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Shipping Method -->
+            <div class="checkout-section">
+              <h2 class="checkout-section-title">3. Způsob dopravy</h2>
+              <label class="shipping-option">
+                <input type="radio" name="shippingMethod" value="standard" checked>
+                <div class="shipping-option-info">
+                  <div class="shipping-option-name">Standardní doprava (5-7 pracovních dnů)</div>
+                  <div class="shipping-option-desc">Zdarma při objednávce nad $100</div>
+                </div>
+                <div class="shipping-option-price" id="shipStandardPrice">${baseShipping === 0 ? 'ZDARMA' : formatPrice(baseShipping)}</div>
+              </label>
+              <label class="shipping-option">
+                <input type="radio" name="shippingMethod" value="express" data-extra="19.90">
+                <div class="shipping-option-info">
+                  <div class="shipping-option-name">Expresní doprava (2-3 pracovní dny)</div>
+                  <div class="shipping-option-desc">Přední zpracování a doručení</div>
+                </div>
+                <div class="shipping-option-price" id="shipExpressPrice">${formatPrice(expressShipping)}</div>
+              </label>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="checkout-section">
+              <h2 class="checkout-section-title">4. Způsob platby</h2>
+              <div class="payment-methods">
+                <label class="payment-method active" id="pm-card">
+                  <input type="radio" name="payment" value="card" checked>
+                  <span class="pm-icon">💳</span>
+                  <span>Kreditní / Debitní karta</span>
+                  <span class="pm-badges">Visa · Mastercard</span>
+                </label>
+                <label class="payment-method" id="pm-paypal">
+                  <input type="radio" name="payment" value="paypal">
+                  <span class="pm-icon">🅿️</span>
+                  <span>PayPal</span>
+                </label>
+                <label class="payment-method" id="pm-apple">
+                  <input type="radio" name="payment" value="applepay">
+                  <span class="pm-icon">📱</span>
+                  <span>Apple Pay</span>
+                </label>
+                <label class="payment-method" id="pm-google">
+                  <input type="radio" name="payment" value="googlepay">
+                  <span class="pm-icon">📱</span>
+                  <span>Google Pay</span>
+                </label>
+                <label class="payment-method" id="pm-tt">
+                  <input type="radio" name="payment" value="tt">
+                  <span class="pm-icon">🏦</span>
+                  <span>Bankovní převod (T/T)</span>
+                  <span class="pm-badges">B2B · Velkoobchod</span>
+                </label>
+              </div>
+
+              <!-- Card details (shown for card / Apple Pay / Google Pay) -->
+              <div id="cardDetails" class="card-details-box">
+                <div class="form-group">
+                  <label for="cardNumber">Číslo karty *</label>
+                  <input type="text" id="cardNumber" name="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric" autocomplete="cc-number">
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="cardExpiry">Datum expirace *</label>
+                    <input type="text" id="cardExpiry" name="cardExpiry" placeholder="MM/YY" maxlength="5" inputmode="numeric" autocomplete="cc-exp">
+                  </div>
+                  <div class="form-group">
+                    <label for="cardCvv">CVV *</label>
+                    <input type="text" id="cardCvv" name="cardCvv" placeholder="123" maxlength="4" inputmode="numeric" autocomplete="cc-csc">
+                  </div>
+                  <div class="form-group">
+                    <label for="cardName">Jméno na kartě *</label>
+                    <input type="text" id="cardName" name="cardName" placeholder="Jan Novák" autocomplete="cc-name">
+                  </div>
+                </div>
+                <div class="secure-note">🔒 Údaje karty se odesílají přímo společnosti Stripe — nikdy se neukládají na našem serveru.</div>
+              </div>
+
+              <!-- T/T Bank Transfer details (shown when T/T is selected) -->
+              <div id="ttDetails" class="card-details-box" style="display:none;">
+                <div class="tt-notice" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+                  <strong>📋 Jak platit přes T/T:</strong>
+                  <ol style="margin:8px 0 0 18px;padding:0;color:#475569;line-height:1.7;">
+                    <li>Vytvořte objednávku pro získání ID objednávky.</li>
+                    <li>Zašleme e-mailem formální Proforma fakturu (PI) s bankovními údaji.</li>
+                    <li>Převeďte celou částku na bankovní účet níže.</li>
+                    <li>Vaše objednávka bude odeslána po potvrzení platby (1–3 pracovní dny).</li>
+                  </ol>
+                </div>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:16px;font-family:monospace;font-size:14px;line-height:1.9;color:#1e293b;">
+                  <div><strong>Jméno příjemce:</strong> Millennium Plus Holdings Group Limited</div>
+                  <div><strong>Název banky:</strong> The Hongkong and Shanghai Banking Corporation Limited</div>
+                  <div><strong>Kód banky:</strong> 004</div>
+                  <div><strong>Číslo účtu:</strong> 801-791278-838</div>
+                  <div><strong>SWIFT kód:</strong> HSBC HKHHKH</div>
+                  <div><strong>Adresa banky:</strong> 1 Queen's Road Central, Hong Kong</div>
+                  <div><strong>Měna:</strong> USD</div>
+                </div>
+                <div class="secure-note" style="margin-top:12px;">
+                  💡 T/T platby se obvykle používají pro B2B a velkoobchodní objednávky. Uveďte prosím číslo objednávky v platebním označení.
+                </div>
+              </div>
+            </div>
+
+            <!-- Billing -->
+            <div class="checkout-section">
+              <label class="checkbox-label">
+                <input type="checkbox" id="sameAsShipping" checked> Fakturační adresa stejná jako doručovací adresa
+              </label>
+            </div>
+
+          </div>
+
+          <!-- Right: Order Summary -->
+          <div class="checkout-summary">
+            <h2 class="cart-summary-title">Souhrn objednávky</h2>
+
+            <div class="checkout-items-list">
+              ${cartItems}
+            </div>
+
+            <div class="summary-divider"></div>
+
+            <div class="summary-row">
+              <span>Mezisoučet</span>
+              <span id="sumSubtotal">${formatPrice(t.subtotal)}</span>
+            </div>
+            <div class="summary-row discount" id="discountRow" style="${t.discountAmount > 0 ? '' : 'display:none;'}">
+              <span>Sleva (<span id="discountCodeLabel">${esc(t.appliedCode)}</span>)</span>
+              <span id="sumDiscount">−${formatPrice(t.discountAmount)}</span>
+            </div>
+            <div class="summary-row">
+              <span>Doprava</span>
+              <span id="sumShipping">${t.shipping === 0 ? '<span style="color:#10b981;">ZDARMA</span>' : formatPrice(t.shipping)}</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-row total">
+              <span>Celkem</span>
+              <span id="sumTotal">${formatPrice(t.total)}</span>
+            </div>
+
+            <button class="btn btn-primary btn-large btn-block" id="placeOrderBtn" style="margin-top:20px;" onclick="handlePlaceOrder()">
+              🔒 Objednat — ${formatPrice(t.total)}
+            </button>
+
+            <div class="cart-trust" style="margin-top:16px;">
+              <div>🔒 SSL šifrováno</div>
+              <div>🛡️ Ochrana kupujících</div>
+              <div>↩️ 30denní vrácení</div>
+            </div>
+
+            <div class="payment-icons" style="margin-top:12px;">
+              <span class="pay-icon">Visa</span>
+              <span class="pay-icon">Mastercard</span>
+              <span class="pay-icon">PayPal</span>
+              <span class="pay-icon">Apple Pay</span>
+              <span class="pay-icon">Google Pay</span>
+              <span class="pay-icon">T/T</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Shipping method change -> keep the summary in sync with the real total
+      document.querySelectorAll('input[name="shippingMethod"]').forEach(radio => {
+        radio.addEventListener('change', updateCheckoutSummary);
+      });
+
+      // Payment method toggle
+      document.querySelectorAll('input[name="payment"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+          document.querySelectorAll('.payment-method').forEach(pm => pm.classList.remove('active'));
+          this.closest('.payment-method').classList.add('active');
+          // Apple Pay / Google Pay also need card details here, otherwise the
+          // form asks for fields that are hidden and checkout cannot proceed.
+          const needsCard = CARD_PAYMENT_METHODS.indexOf(this.value) !== -1;
+          document.getElementById('cardDetails').style.display = needsCard ? 'block' : 'none';
+          document.getElementById('ttDetails').style.display = this.value === 'tt' ? 'block' : 'none';
+        });
+      });
+    }
+
+    /** Re-render the money rows after a shipping/discount change. */
+    function updateCheckoutSummary() {
+      if (!document.getElementById('sumTotal')) return;
+      const t = getCheckoutTotals();
+
+      const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+      const setHtml = (id, html) => {
+        const el = document.getElementById(id);
+        if (el) el.innerHTML = html;
+      };
+
+      setText('sumSubtotal', formatPrice(t.subtotal));
+      setText('sumDiscount', '−' + formatPrice(t.discountAmount));
+      setText('discountCodeLabel', t.appliedCode);
+      setHtml('sumShipping', t.shipping === 0 ? '<span style="color:#10b981;">ZDARMA</span>' : formatPrice(t.shipping));
+      setText('sumTotal', formatPrice(t.total));
+
+      const discountRow = document.getElementById('discountRow');
+      if (discountRow) discountRow.style.display = t.discountAmount > 0 ? '' : 'none';
+
+      const btn = document.getElementById('placeOrderBtn');
+      if (btn) btn.innerHTML = '🔒 Objednat — ' + formatPrice(t.total);
+
+      const base = getBaseShipping();
+      setText('shipStandardPrice', base === 0 ? 'ZDARMA' : formatPrice(base));
+      setText('shipExpressPrice', formatPrice(getShipping('express')));
+    }
+
+    /** Parse "MM/YY" into Stripe's numeric fields; returns null when malformed. */
+    function parseCardExpiry(value) {
+      const parts = String(value || '').split('/');
+      if (parts.length !== 2) return null;
+      const month = parseInt(parts[0], 10);
+      const shortYear = parseInt(parts[1], 10);
+      if (!Number.isInteger(month) || !Number.isInteger(shortYear)) return null;
+      if (month < 1 || month > 12) return null;
+      if (parts[1].trim().length !== 2) return null;
+      return { exp_month: month, exp_year: 2000 + shortYear };
+    }
+
+    async function handlePlaceOrder() {
+      // Check cart for out-of-stock items before proceeding
+      const cart = getCart();
+      const outOfStockItem = cart.find(item => {
+        const product = PRODUCTS.find(p => p.id === item.id);
+        return product && product.stock <= 0;
+      });
+      if (outOfStockItem) {
+        alert(`Omlouváme se, ${outOfStockItem.name} je momentálně vyprodáno. Odstraňte jej prosím z košíku.`);
+        return;
+      }
+
+      // Validate required fields
+      const required = ['email', 'phone', 'firstName', 'lastName', 'address', 'city', 'state', 'zip'];
+      for (const id of required) {
+        const el = document.getElementById(id);
+        if (!el || !el.value.trim()) {
+          alert('Vyplňte prosím všechna povinná pole.');
+          if (el) el.focus();
+          return;
+        }
+      }
+
+      const emailInput = document.getElementById('email');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(emailInput.value.trim())) {
+        alert('Zadejte prosím platnou e-mailovou adresu.');
+        emailInput.focus();
+        return;
+      }
+
+      const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+      const isCardPayment = CARD_PAYMENT_METHODS.indexOf(paymentMethod) !== -1;
+
+      let cardDetails = null;
+      if (isCardPayment) {
+        const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        const expiry = parseCardExpiry(document.getElementById('cardExpiry').value);
+        const cvv = document.getElementById('cardCvv').value.trim();
+        const cardName = document.getElementById('cardName').value.trim();
+
+        if (!cardNumber || !cvv || !cardName || !expiry) {
+          alert('Vyplňte prosím všechny údaje karty (číslo, MM/RR, CVV a jméno).');
+          return;
+        }
+        if (!/^[0-9]{12,19}$/.test(cardNumber)) {
+          alert('Číslo karty nemá správný formát.');
+          return;
+        }
+        if (!/^[0-9]{3,4}$/.test(cvv)) {
+          alert('CVV nemá správný formát.');
+          return;
+        }
+        cardDetails = { cardNumber: cardNumber, expiry: expiry, cvv: cvv, cardName: cardName };
+      }
+
+      const totals = getCheckoutTotals();
+      const orderId = generateOrderId();
+
+      const order = {
+        orderId: orderId,
+        date: new Date().toISOString(),
+        status: "confirmed",
+        email: emailInput.value.trim(),
+        phone: document.getElementById('phone').value.trim(),
+        shipping: {
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
+          address: document.getElementById('address').value.trim(),
+          city: document.getElementById('city').value.trim(),
+          state: document.getElementById('state').value.trim(),
+          zip: document.getElementById('zip').value.trim(),
+          country: document.getElementById('country').value,
+        },
+        items: cart,
+        discountCode: totals.appliedCode,
+        shippingMethod: totals.method,
+        paymentMethod: paymentMethod,
+        paymentStatus: "pending",
+      };
+
+      const submitBtn = document.getElementById('placeOrderBtn');
+      const originalLabel = '🔒 Objednat — ' + formatPrice(totals.total);
+      if (submitBtn) {
+        submitBtn.textContent = isCardPayment ? "Zpracování platby..." : "Zpracování...";
+        submitBtn.disabled = true;
+      }
+      const restoreButton = () => {
+        if (submitBtn) { submitBtn.textContent = originalLabel; submitBtn.disabled = false; }
+      };
+
+      try {
+        const resp = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(order),
+        });
+
+        let result = null;
+        try {
+          result = await resp.json();
+        } catch (parseErr) {
+          result = null;
+        }
+
+        if (!result) {
+          alert("Server objednávek neodpověděl správně (kód " + resp.status + "). Objednávku prosím zopakujte nebo nám napište na sales@heatxlab.com.");
+          restoreButton();
+          return;
+        }
+        if (resp.status === 503 && result.success === false) {
+          alert("Objednávkový systém není dostupný: " + (result.error || "neznámá chyba") + "\nNapište nám prosím na sales@heatxlab.com.");
+          restoreButton();
+          return;
+        }
+        if (!result.success) {
+          alert("Odeslání objednávky selhalo: " + (result.error || "Neznámá chyba"));
+          restoreButton();
+          return;
+        }
+
+        // Server is authoritative: it recalculates prices, shipping and totals.
+        const savedOrder = result.order || order;
+        const serverOrderId = savedOrder.orderId || orderId;
+
+        // === Stripe payment confirmation for card-based payments ===
+        if (result.requiresPayment && result.clientSecret) {
+          // A PaymentIntent created with a live secret key cannot be confirmed
+          // with a pk_test_ publishable key (and vice versa). Without this guard
+          // the customer would just see a cryptic "No such payment_intent".
+          const pkIsLive = STRIPE_PUBLISHABLE_KEY.indexOf('pk_live_') === 0;
+          const serverIsLive = typeof result.paymentLivemode === 'boolean' ? result.paymentLivemode : null;
+          const modeMismatch = serverIsLive !== null && serverIsLive !== pkIsLive;
+
+          if (modeMismatch) {
+            alert("Platební brána neodpovídá režimu webu, platbu proto nelze dokončit.\n\nObjednávka " + serverOrderId + " byla přijata se stavem „čeká na platbu“. Kontaktujte nás prosím na sales@heatxlab.com.");
+          } else if (typeof Stripe !== 'function') {
+            alert("Platební modul se nepodařilo načíst. Obnovte prosím stránku a zkuste to znovu.");
+            restoreButton();
+            return;
+          } else {
+
+          const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+          const paymentResult = await stripe.confirmCardPayment(result.clientSecret, {
+            payment_method: {
+              card: {
+                number: cardDetails.cardNumber,
+                exp_month: cardDetails.expiry.exp_month,
+                exp_year: cardDetails.expiry.exp_year,
+                cvc: cardDetails.cvv,
+              },
+              billing_details: {
+                name: cardDetails.cardName,
+                email: savedOrder.email,
+                phone: savedOrder.phone,
+                address: {
+                  line1: savedOrder.shipping.address,
+                  city: savedOrder.shipping.city,
+                  state: savedOrder.shipping.state,
+                  postal_code: savedOrder.shipping.zip,
+                  country: savedOrder.shipping.country,
+                },
+              },
+            },
+          });
+
+          if (paymentResult.error) {
+            alert("Platba selhala: " + paymentResult.error.message);
+            restoreButton();
+            return;
+          }
+
+          savedOrder.paymentStatus = "paid";
+          savedOrder.stripePaymentIntentId = paymentResult.paymentIntent.id;
+
+          // Ask the server to verify the intent and flag the order as paid.
+          try {
+            const confirmResp = await fetch("/api/orders/confirm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                orderId: serverOrderId,
+                email: savedOrder.email,
+                paymentIntentId: paymentResult.paymentIntent.id,
+              }),
+            });
+            const confirmResult = await confirmResp.json().catch(() => null);
+            if (confirmResult && confirmResult.success && confirmResult.order) {
+              savedOrder.paymentStatus = confirmResult.order.paymentStatus;
+            }
+          } catch (confirmErr) {
+            console.warn("Payment confirmation could not be recorded:", confirmErr);
+          }
+          }
+        } else if (ONLINE_PAYMENT_METHODS.indexOf(paymentMethod) !== -1) {
+          // Gateway not configured — say so instead of pretending it was paid.
+          alert("Objednávka byla přijata se stavem „čeká na platbu“. Online platební brána pro tuto metodu zatím není aktivní.\n\nPro dokončení použijte bankovní převod (T/T) nebo nás kontaktujte na sales@heatxlab.com s číslem objednávky " + serverOrderId + ".");
+        }
+
+        // Order accepted — now it is safe to clear the cart.
+        saveOrder(savedOrder); // local backup for this browser
+        clearCart();
+        sessionStorage.setItem("lastOrder", JSON.stringify(savedOrder));
+        window.location.href = `/order-tracking.html?order=${encodeURIComponent(serverOrderId)}&email=${encodeURIComponent(savedOrder.email)}`;
+
+      } catch (err) {
+        console.error("Checkout error:", err);
+        alert("Během pokladny došlo k chybě (spojení se serverem). Vaše položky v košíku zůstávají — zkuste to prosím znovu.");
+        restoreButton();
+      }
+    }
+
+    // Format card number input
+    document.addEventListener('input', function(e) {
+      if (e.target.id === 'cardNumber') {
+        let val = e.target.value.replace(/\s/g, '').replace(/[^0-9]/g, '');
+        e.target.value = val.replace(/(.{4})/g, '$1 ').trim();
+      }
+      if (e.target.id === 'cardExpiry') {
+        let val = e.target.value.replace(/\D/g, '');
+        if (val.length >= 2) val = val.substring(0,2) + '/' + val.substring(2,4);
+        e.target.value = val;
+      }
+      if (e.target.id === 'cardCvv') {
+        e.target.value = e.target.value.replace(/\D/g, '').substring(0,4);
+      }
+    });
+
+    try { renderCheckout(); } catch(e) { console.error('Checkout render error:', e); }
+  </script>
+  <script src="js/main.js"></script>
+</body>
+</html>
